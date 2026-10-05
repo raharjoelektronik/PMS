@@ -1,0 +1,184 @@
+/* --- Style Blok 1 (Updated for Responsive) --- */
+body {
+  background-color: #f4f6fa !important;
+}
+.hero-container {
+  min-height: calc(100vh - 70px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border-bottom: 1px solid #cbd5e1;
+  padding: 2rem 1rem;
+}
+.hero-title {
+  color: #0f172a !important;
+  font-weight: 800;
+}
+.hero-subtitle {
+  color: #206bc4 !important;
+  font-weight: 600;
+  font-size: 1.5rem;
+}
+.view-section {
+  transition: all 0.3s ease-in-out;
+}
+.d-none {
+  display: none !important;
+}
+.payment-option-card {
+  border: 2px solid #e2e8f0;
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+}
+.payment-option-card:hover {
+  border-color: #206bc4;
+  background-color: #f8fafc;
+}
+.payment-option-card.selected {
+  border-color: #206bc4;
+  background-color: #f0f7ff;
+}
+
+/* Responsivitas tambahan untuk layar mobile kecil */
+@media (max-width: 576px) {
+  .hero-subtitle {
+    font-size: 1.2rem;
+  }
+}
+```[cite: 3]
+
+---
+
+### 2. `admin.css` (Panel Admin & Sidebar)
+* Penambahan dukungan *mobile toggle* (`.sidebar-mobile-open`) agar sidebar dapat dibuka melalui tombol di HP, serta penyesuaian ukuran kotak kode *pairing* agar tidak terpotong di layar kecil.
+
+```css
+/* --- Style Blok 1 (Updated for Responsive & Mobile Toggle) --- */
+body { background-color: #f4f6fa !important; }
+.d-none { display: none !important; }
+.nav-link.active {
+  background-color: rgba(32, 107, 196, 0.1);
+  color: #206bc4 !important;
+  font-weight: 600;
+  border-radius: 6px;
+}
+
+/* SIDEBAR HOVER EXCLUSIVE: Melayang (Floating) ala Gemini + Support Mobile Toggle */
+#sidebar-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 70px;
+  min-width: 70px;
+  overflow-x: hidden;
+  transition: width 0.25s ease-in-out, box-shadow 0.25s ease-in-out, transform 0.25s ease-in-out;
+  white-space: nowrap;
+  background-color: #ffffff;
+  height: 100vh;
+  z-index: 1050;
+  box-shadow: 2px 0 5px rgba(0,0,0,0.02);
+}
+#sidebar-container:hover,
+#sidebar-container.sidebar-mobile-open {
+  width: 260px;
+  box-shadow: 4px 0 15px rgba(0,0,0,0.1);
+}
+#sidebar-container .nav-link span.menu-text {
+  display: none;
+  opacity: 0;
+  transition: opacity 0.15s ease-in-out;
+}
+#sidebar-container:hover .nav-link span.menu-text,
+#sidebar-container.sidebar-mobile-open .nav-link span.menu-text {
+  display: inline;
+  opacity: 1;
+}
+#sidebar-container .nav-link i {
+  font-size: 1.25rem;
+  min-width: 35px;
+  text-align: center;
+}
+#sidebar-container .sidebar-title-text {
+  display: none;
+}
+#sidebar-container:hover .sidebar-title-text,
+#sidebar-container.sidebar-mobile-open .sidebar-title-text {
+  display: inline;
+}
+
+#main-content-area {
+  margin-left: 70px;
+  transition: margin-left 0.25s ease-in-out;
+}
+
+/* Penyesuaian Pairing Code Box untuk Mobile */
+.pairing-code-box {
+  font-size: 2.2rem;
+  letter-spacing: 6px;
+  font-weight: 800;
+  color: #0d6efd;
+  background: #eef5ff;
+  border: 2px dashed #0d6efd;
+  border-radius: 10px;
+  padding: 12px 24px;
+  display: inline-block;
+  max-width: 100%;
+  word-break: break-all;
+}
+
+@media (max-width: 768px) {
+  #main-content-area {
+    margin-left: 70px !important;
+    padding: 15px;
+  }
+  .pairing-code-box {
+    font-size: 1.5rem;
+    letter-spacing: 3px;
+    padding: 8px 12px;
+  }
+}
+```[cite: 1]
+
+---
+
+### 3. `debug.css` (Halaman Debug / Terminal)
+* Optimalisasi tata letak kotak terminal agar responsif dan tidak meluber keluar layar pada perangkat berukuran kecil.
+
+```css
+/* --- Style Blok 1 (Updated for Responsive Terminal) --- */
+body {
+  background-color: #f4f6fa !important;
+}
+.dev-header {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  border-bottom: 3px solid #dc2626;
+  color: #ffffff;
+}
+.terminal-box {
+  background-color: #1e293b;
+  color: #38bdf8;
+  font-family: monospace;
+  font-size: 0.85rem;
+  height: 280px;
+  max-height: 50vh;
+  overflow-y: auto;
+  padding: 12px;
+  border-radius: 6px;
+  border: 1px solid #334155;
+  text-align: left;
+  word-break: break-all;
+}
+.log-info { color: #38bdf8; }
+.log-success { color: #4ade80; }
+.log-warning { color: #facc15; }
+.log-error { color: #f87171; }
+.d-none { display: none !important; }
+
+@media (max-width: 576px) {
+  .terminal-box {
+    font-size: 0.75rem;
+    height: 220px;
+  }
+}
+```[cite: 2]

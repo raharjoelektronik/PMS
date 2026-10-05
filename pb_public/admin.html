@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="id"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel - Kedung Rejeki Guest House &amp; Travel</title>
+  
+  <!-- CSS Tabler & Tabler Icons -->
+  <link rel="stylesheet" href="./assets/css/tabler.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+
+	<!-- Pustaka QR Code Lokal -->
+    <script src="node_modules/qrcodejs/qrcode.min.js"></script>
+	<!-- Pustaka jsPDF Lokal -->
+	<script src="node_modules/jspdf/dist/jspdf.umd.min.js"></script>
+  
+  <!-- PocketBase SDK -->
+  <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- HTML5 QR Code Library -->
+  <script src="https://unpkg.com/html5-qrcode"></script>
+
+  
+<link rel="stylesheet" href="assets/css/admin.css"></head>
+<body>
+
+  <!-- SECTION 1: FORM LOGIN ADMIN -->
+  <div id="section-login" class="page page-center min-vh-100 py-4">
+    <div class="container container-tight">
+      <div class="text-center mb-4">
+        <a href="./index.html" class="navbar-brand navbar-brand-autodark fs-2 fw-bold text-primary">
+          <span class="badge bg-primary text-white me-2">Kedung Rejeki</span> Admin Control
+        </a>
+      </div>
+      <div class="card card-md shadow-sm">
+        <div class="card-body">
+          <h2 class="h2 text-center mb-4">Login ke Dashboard Admin</h2>
+          <form id="form-login" autocomplete="off">
+            <div class="mb-3">
+              <label class="form-label required">Email / Username Admin</label>
+              <input type="text" id="login-email" class="form-control" placeholder="admin@kedungrejeki.com" required="">
+            </div>
+            <div class="mb-3">
+              <label class="form-label required">Password</label>
+              <input type="password" id="login-password" class="form-control" placeholder="••••••••" required="">
+            </div>
+            <div class="form-footer">
+              <button type="submit" class="btn btn-primary w-100" id="btn-login">
+                <i class="ti ti-lock-open me-1"></i> Masuk Admin Panel
+              </button>
+            </div>
+          </form>
+          <div class="text-center mt-3">
+            <a href="./index.html" class="text-muted small text-decoration-underline">
+              <i class="ti ti-arrow-left me-1"></i> Kembali ke Homepage Utama
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 2: DASHBOARD UTAMA -->
+  <div id="section-dashboard" class="d-none">
+    
+    <header class="navbar navbar-expand-md navbar-dark bg-dark sticky-top d-print-none">
+      <div class="container-fluid px-4">
+        <div class="d-flex align-items-center">
+          <a href="#" class="navbar-brand m-0">
+            <span class="badge bg-primary text-white me-2">Admin Panel</span> Kedung Rejeki Guest House
+          </a>
+        </div>
+        <div class="navbar-nav flex-row order-md-last align-items-center">
+          <span class="text-light me-3 small d-none d-md-inline" id="admin-user-display">Logged in</span>
+          <a href="./index.html" class="btn btn-outline-light btn-sm me-2">
+            <i class="ti ti-world me-1"></i> Lihat Website
+          </a>
+          <button class="btn btn-danger btn-sm" onclick="logoutAdmin()">
+            <i class="ti ti-logout me-1"></i> Logout
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <div class="container-fluid px-0">
+      <div class="row g-0 position-relative">
+        
+        <!-- SIDEBAR -->
+        <div class="bg-white border-end p-2" id="sidebar-container">
+          <ul class="nav nav-pills flex-column gap-1">
+            <li class="nav-item">
+              <a href="#" class="nav-link active" id="menu-wa-web" onclick="switchTab('wa-web')" title="WhatsApp Web Bot">
+                <i class="ti ti-brand-whatsapp text-success"></i> <span class="menu-text ms-2">WhatsApp Web Bot</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="#" class="nav-link" id="menu-finances" onclick="switchTab('finances')" title="Laporan Keuangan &amp; Kas">
+                <i class="ti ti-chart-bar"></i> <span class="menu-text ms-2">Laporan Keuangan &amp; Kas</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="#" class="nav-link" id="menu-pettycash" onclick="switchTab('pettycash')" title="Kas Kecil &amp; Pengeluaran">
+                <i class="ti ti-cash-banknote"></i> <span class="menu-text ms-2">Kas Kecil (Petty Cash)</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="#" class="nav-link" id="menu-inventory" onclick="switchTab('inventory')" title="Inventaris Barang">
+                <i class="ti ti-package"></i> <span class="menu-text ms-2">Inventaris &amp; Mutasi Stok</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="#" class="nav-link" id="menu-inv-logs" onclick="switchTab('inv-logs')" title="Riwayat Mutasi Barang">
+                <i class="ti ti-history"></i> <span class="menu-text ms-2">Riwayat Log Stok</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="#" class="nav-link" id="menu-bookings" onclick="switchTab('bookings')" title="Daftar Reservasi">
+                <i class="ti ti-calendar-event"></i> <span class="menu-text ms-2">Daftar Reservasi</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="#" class="nav-link" id="menu-checkin-scan" onclick="switchTab('checkin-scan')" title="Check-In &amp; Validasi File QR">
+                <i class="ti ti-qrcode"></i> <span class="menu-text ms-2">Check-In &amp; Validasi File QR</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="#" class="nav-link" id="menu-master-qr" onclick="switchTab('master-qr')" title="Emergency Master QR (Kamar 1-4)">
+                <i class="ti ti-key"></i> <span class="menu-text ms-2">Emergency Master QR</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="#" class="nav-link" id="menu-transactions" onclick="switchTab('transactions')" title="Rincian Transaksi">
+                <i class="ti ti-receipt"></i> <span class="menu-text ms-2">Rincian Transaksi</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="#" class="nav-link" id="menu-wa-admin" onclick="switchTab('wa-admin')" title="Nomor Ponsel &amp; Notifikasi Admin">
+                <i class="ti ti-users"></i> <span class="menu-text ms-2">Nomor &amp; Notifikasi Admin</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="#" class="nav-link" id="menu-api-keys" onclick="switchTab('api-keys')" title="Key API Gateway">
+                <i class="ti ti-key"></i> <span class="menu-text ms-2">Key API Gateway</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <!-- AREA KONTEN UTAMA -->
+        <div class="col p-4" id="main-content-area">
+
+          <!-- 0. TAB WHATSAPP WEB BOT -->
+          <div id="tab-wa-web">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div>
+                <h2 class="page-title fs-2">Koneksi Bot WhatsApp Web</h2>
+                <div class="text-muted">Hubungkan Server VPS ke Aplikasi WA Tanpa Gunakan Kamera / QR Code</div>
+              </div>
+              <button class="btn btn-outline-secondary btn-sm" onclick="checkWaStatus()">
+                <i class="ti ti-refresh me-1"></i> Cek Server
+              </button>
+            </div>
+
+            <div class="card shadow-sm border-success mb-4">
+              <div class="card-header bg-success-lt d-flex justify-content-between align-items-center">
+                <h3 class="card-title text-success mb-0">
+                  <i class="ti ti-device-mobile-message me-2"></i> Tautkan WhatsApp Admin via Kode Teks 8-Digit
+                </h3>
+                <span id="wa-connection-badge" class="badge bg-secondary text-white">Memeriksa Status...</span>
+              </div>
+              <div class="card-body">
+                <form id="form-wa-pair" class="row g-3 align-items-end mb-3">
+                  <div class="col-md-7">
+                    <label class="form-label required fw-bold">Nomor WhatsApp Admin Utama yang Ingin Ditautkan</label>
+                    <div class="input-group">
+                      <span class="input-group-text bg-light">+62 / 08</span>
+                      <input type="text" id="wa-pair-phone" class="form-control form-control-lg" placeholder="81335725804" required="">
+                    </div>
+                  </div>
+                  <div class="col-md-5">
+                    <button type="submit" class="btn btn-success btn-lg w-100" id="btn-request-pair-code">
+                      <i class="ti ti-key me-1"></i> Dapatkan Kode Tautan 8 Digit
+                    </button>
+                  </div>
+                </form>
+
+                <div id="pairing-code-display" class="text-center p-4 border rounded bg-white my-3 d-none">
+                  <div class="text-muted small text-uppercase mb-1">Kode Tautan WhatsApp Anda:</div>
+                  <div class="pairing-code-box my-2" id="text-pairing-code">---- ----</div>
+                  <p class="text-muted small mt-2 mb-0">Kode ini berlaku selama 60 detik. Segera masukkan ke aplikasi WhatsApp HP Anda.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 1. TAB LAPORAN KEUANGAN & KAS -->
+          <div id="tab-finances" class="d-none">
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h2 class="page-title fs-2">Laporan Keuangan & Cash Flow</h2>
+    <div class="text-muted">Ringkasan Pemasukan, Arus Kas, dan Rekomendasi Bisnis</div>
+  </div>
+  <div>
+    <button class="btn btn-outline-primary btn-sm me-2" onclick="printFinancialReportPdf()">
+      <i class="ti ti-printer me-1"></i> Cetak PDF
+    </button>
+    <button class="btn btn-primary btn-sm" onclick="loadDashboardData()">
+      <i class="ti ti-refresh me-1"></i> Refresh
+    </button>
+  </div>
+</div>
+
+            <div class="row row-cards mb-4">
+              <div class="col-sm-6 col-lg-3">
+                <div class="card border-0 shadow-sm">
+                  <div class="card-body">
+                    <div class="row align-items-center">
+                      <div class="col-auto"><span class="bg-success text-white avatar"><i class="ti ti-currency-rupiah fs-2"></i></span></div>
+                      <div class="col">
+                        <div class="font-weight-medium" id="stat-total-revenue">Rp 0</div>
+                        <div class="text-muted small">Total Pemasukan (Cash In)</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-sm-6 col-lg-3">
+                <div class="card border-0 shadow-sm">
+                  <div class="card-body">
+                    <div class="row align-items-center">
+                      <div class="col-auto"><span class="bg-primary text-white avatar"><i class="ti ti-calendar-stats fs-2"></i></span></div>
+                      <div class="col">
+                        <div class="font-weight-medium" id="stat-total-bookings">0 Reservasi</div>
+                        <div class="text-muted small">Total Pemesanan Masuk</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-sm-6 col-lg-3">
+                <div class="card border-0 shadow-sm">
+                  <div class="card-body">
+                    <div class="row align-items-center">
+                      <div class="col-auto"><span class="bg-warning text-white avatar"><i class="ti ti-wallet fs-2"></i></span></div>
+                      <div class="col">
+                        <div class="font-weight-medium" id="stat-pending-payments">Rp 0</div>
+                        <div class="text-muted small">Piutang / Sisa DP</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-sm-6 col-lg-3">
+                <div class="card border-0 shadow-sm">
+                  <div class="card-body">
+                    <div class="row align-items-center">
+                      <div class="col-auto"><span class="bg-danger text-white avatar"><i class="ti ti-receipt-refund fs-2"></i></span></div>
+                      <div class="col">
+                        <div class="font-weight-medium" id="stat-refund-estimate">Rp 0</div>
+                        <div class="text-muted small">Cadangan Refund</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row row-cards mb-4">
+              <div class="col-lg-12">
+                <div class="card shadow-sm h-100">
+                  <div class="card-header bg-white"><h3 class="card-title text-success"><i class="ti ti-chart-dots me-2"></i> Laporan Cash Flow Harian</h3></div>
+                  <div class="card-body"><canvas id="cashFlowChart" style="max-height: 250px;"></canvas></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB KAS KECIL (PETTY CASH) -->
+          <div id="tab-pettycash" class="d-none">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h2 class="page-title fs-2">Pencatatan Kas Kecil (Expense / Petty Cash)</h2>
+    <div class="text-muted">Kelola Pengeluaran Operasional Harian Guest House</div>
+  </div>
+  <div>
+    <button class="btn btn-outline-warning btn-sm me-2" onclick="printPettyCashPdf()">
+      <i class="ti ti-printer me-1"></i> Cetak PDF
+    </button>
+    <span class="badge bg-yellow-lt fs-3" id="count-expenses">0 Pengeluaran</span>
+  </div>
+</div>
+
+            <div class="card shadow-sm border-warning mb-4">
+              <div class="card-header bg-warning-lt">
+                <h3 class="card-title text-dark"><i class="ti ti-circle-plus me-2"></i> Tambah Pengeluaran Kas Kecil Baru</h3>
+              </div>
+              <div class="card-body">
+                <form id="form-expense" class="row g-3">
+                  <div class="col-md-4">
+                    <label class="form-label required">Deskripsi / Keterangan</label>
+                    <input type="text" id="expense-desc" class="form-control" placeholder="Contoh: Beli Galon &amp; Tisu" required="">
+                  </div>
+                  <div class="col-md-3">
+                    <label class="form-label required">Kategori</label>
+                    <select id="expense-category" class="form-select" required="">
+                      <option value="">Pilih Kategori...</option>
+                      <option value="Operasional">Operasional</option>
+                      <option value="Kebersihan">Kebersihan</option>
+                      <option value="Maintenance">Maintenance / Perbaikan</option>
+                      <option value="Konsumsi">Konsumsi</option>
+                      <option value="Lainnya">Lainnya</option>
+                    </select>
+                  </div>
+                  <div class="col-md-2">
+                    <label class="form-label required">Jumlah (Rp)</label>
+                    <input type="number" id="expense-amount" class="form-control" placeholder="50000" required="">
+                  </div>
+                  <div class="col-md-3">
+                    <label class="form-label required">Sumber Pembayaran</label>
+                    <input type="text" id="expense-source" class="form-control" placeholder="Kas Kecil / BCA" required="">
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label required">Petugas / Pelapor</label>
+                    <input type="text" id="expense-petugas" class="form-control" placeholder="Nama Staff / Resepsionis" required="">
+                  </div>
+                  <div class="col-md-8 d-flex align-items-end">
+                    <button type="submit" class="btn btn-warning w-100" id="btn-save-expense">
+                      <i class="ti ti-device-floppy me-1"></i> Simpan Pengeluaran
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+            <div class="card shadow-sm">
+              <div class="card-body border-bottom py-3">
+                <div class="input-icon">
+                  <span class="input-icon-addon"><i class="ti ti-search"></i></span>
+                  <input type="text" id="search-expense" class="form-control" placeholder="Cari keterangan / petugas..." onkeyup="filterExpenses()">
+                </div>
+              </div>
+              <div class="table-responsive">
+                <table class="table table-vcenter card-table table-hover">
+                  <thead>
+                    <tr>
+                      <th>Keterangan</th>
+                      <th>Kategori</th>
+                      <th>Jumlah</th>
+                      <th>Sumber Pembayaran</th>
+                      <th>Petugas</th>
+                      <th>Waktu</th>
+                      <th>Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody id="expense-table-body">
+                    <tr><td colspan="7" class="text-center text-muted py-4">Memuat data pengeluaran...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB INVENTARIS BARANG & MUTASI OTOMATIS -->
+          <div id="tab-inventory" class="d-none">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h2 class="page-title fs-2">Manajemen Inventaris & Mutasi Stok</h2>
+    <div class="text-muted">Stok Berkurang/Berubah Status Otomatis Sesuai Transaksi Penggunaan / Kerusakan</div>
+  </div>
+  <div>
+    <button class="btn btn-outline-primary btn-sm me-2" onclick="printInventoryPdf()">
+      <i class="ti ti-printer me-1"></i> Cetak PDF
+    </button>
+    <span class="badge bg-blue-lt fs-3" id="count-inventory">0 Jenis Barang</span>
+  </div>
+</div>
+
+            <!-- Form Tambah/Edit Item Inventory -->
+            <div class="card shadow-sm border-primary mb-4">
+              <div class="card-header bg-primary-lt">
+                <h3 class="card-title text-primary"><i class="ti ti-package-plus me-2"></i> Tambah / Setor Awal Barang Inventaris</h3>
+              </div>
+              <div class="card-body">
+                <form id="form-inventory" class="row g-3">
+                  <input type="hidden" id="inv-id">
+                  <div class="col-md-4">
+                    <label class="form-label required">Nama Barang</label>
+                    <input type="text" id="inv-name" class="form-control" placeholder="Contoh: Seprai Kasur / Handuk" required="">
+                  </div>
+                  <div class="col-md-3">
+                    <label class="form-label required">Kategori</label>
+                    <select id="inv-category" class="form-select" required="">
+                      <option value="">Pilih Kategori...</option>
+                      <option value="Linen &amp; Kamar">Linen &amp; Kamar</option>
+                      <option value="Elektronik">Elektronik</option>
+                      <option value="Perlengkapan Mandi">Perlengkapan Mandi</option>
+                      <option value="Furnitur">Furnitur</option>
+                      <option value="Lainnya">Lainnya</option>
+                    </select>
+                  </div>
+                  <div class="col-md-1">
+                    <label class="form-label required" title="Stok Baik">Baik</label>
+                    <input type="number" id="inv-good" class="form-control" value="0" min="0" required="">
+                  </div>
+                  <div class="col-md-1">
+                    <label class="form-label required" title="Stok Kotor">Kotor</label>
+                    <input type="number" id="inv-dirty" class="form-control" value="0" min="0" required="">
+                  </div>
+                  <div class="col-md-1">
+                    <label class="form-label required" title="Stok Rusak">Rusak</label>
+                    <input type="number" id="inv-damaged" class="form-control" value="0" min="0" required="">
+                  </div>
+                  <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100" id="btn-save-inv">
+                      <i class="ti ti-device-floppy me-1"></i> Simpan
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+            <!-- Tabel Data Inventory -->
+            <div class="card shadow-sm">
+              <div class="card-body border-bottom py-3">
+                <div class="input-icon">
+                  <span class="input-icon-addon"><i class="ti ti-search"></i></span>
+                  <input type="text" id="search-inventory" class="form-control" placeholder="Cari nama barang..." onkeyup="filterInventory()">
+                </div>
+              </div>
+              <div class="table-responsive">
+                <table class="table table-vcenter card-table table-hover">
+                  <thead>
+                    <tr>
+                      <th>Nama Barang</th>
+                      <th>Kategori</th>
+                      <th class="text-center"><span class="badge bg-success text-white">Stok Baik</span></th>
+                      <th class="text-center"><span class="badge bg-warning text-dark">Stok Kotor</span></th>
+                      <th class="text-center"><span class="badge bg-danger text-white">Stok Rusak</span></th>
+                      <th class="text-center">Aksi Cepat (Mutasi / Pakai)</th>
+                      <th>Kelola</th>
+                    </tr>
+                  </thead>
+                  <tbody id="inventory-table-body">
+                    <tr><td colspan="7" class="text-center text-muted py-4">Memuat data inventaris...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB RIWAYAT MUTASI STOK -->
+          <div id="tab-inv-logs" class="d-none">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div>
+                <h2 class="page-title fs-2">Riwayat Log Mutasi &amp; Penggunaan Stok</h2>
+                <div class="text-muted">Pelacakan otomatis setiap barang dipakai, kotor, atau rusak</div>
+              </div>
+              <button class="btn btn-outline-secondary btn-sm" onclick="loadInventoryLogs()">
+                <i class="ti ti-refresh me-1"></i> Refresh Log
+              </button>
+            </div>
+
+            <div class="card shadow-sm">
+              <div class="table-responsive">
+                <table class="table table-vcenter card-table table-striped">
+                  <thead>
+                    <tr>
+                      <th>Waktu</th>
+                      <th>Nama Barang</th>
+                      <th>Jenis Aksi / Mutasi</th>
+                      <th class="text-center">Jumlah</th>
+                      <th>Keterangan / Petugas</th>
+                    </tr>
+                  </thead>
+                  <tbody id="inv-logs-table-body">
+                    <tr><td colspan="5" class="text-center text-muted py-4">Memuat riwayat log...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB DAFTAR RESERVASI TAMU -->
+          <div id="tab-bookings" class="d-none">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h2 class="page-title fs-2">Daftar Reservasi Tamu</h2>
+    <div class="text-muted">Kelola Jadwal, Sisa Pembayaran, dan Eksekusi Refund S&K</div>
+  </div>
+  <div>
+    <button class="btn btn-outline-success btn-sm me-2" onclick="printBookingsPdf()">
+      <i class="ti ti-printer me-1"></i> Cetak PDF
+    </button>
+    <span class="badge bg-green-lt fs-3" id="count-bookings">0 Reservasi</span>
+  </div>
+</div>
+
+            <div class="card shadow-sm">
+              <div class="card-body border-bottom py-3">
+                <div class="input-icon">
+                  <span class="input-icon-addon"><i class="ti ti-search"></i></span>
+                  <input type="text" id="search-booking" class="form-control" placeholder="Cari nama tamu / nomor HP..." onkeyup="filterBookings()">
+                </div>
+              </div>
+
+              <div class="table-responsive">
+                <table class="table table-vcenter card-table table-hover">
+                  <thead>
+                    <tr>
+                      <th>Nama Tamu / Kontak</th>
+                      <th>Tgl Check-In / Out</th>
+                      <th>Total Biaya</th>
+                      <th>DP Masuk</th>
+                      <th>Sisa Tagihan</th>
+                      <th>Aksi Refund</th>
+                    </tr>
+                  </thead>
+                  <tbody id="booking-table-body">
+                    <tr><td colspan="6" class="text-center text-muted py-4">Memuat data reservasi...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB SCAN CHECK-IN -->
+          <div id="tab-checkin-scan" class="d-none">
+            <h2 class="page-title fs-2 mb-1">Validasi Tiket &amp; Scan Check-In</h2>
+            <div class="text-muted mb-4">Mendukung Scan via Kamera &amp; Input dari File Gambar QR</div>
+
+            <div class="card shadow-sm border-primary">
+              <div class="card-header bg-primary text-white"><h3 class="card-title mb-0"><i class="ti ti-qrcode me-2"></i> Reader QR Code Tiket Reservasi</h3></div>
+              <div class="card-body">
+                <div class="row g-4">
+                  <div class="col-md-6 border-end">
+                    <h4 class="card-title text-center mb-3"><i class="ti ti-camera me-1"></i> Scan via Kamera HP / Laptop</h4>
+                    <div id="reader" style="width: 100%; max-width: 320px; margin: 0 auto;"></div>
+                  </div>
+                  <div class="col-md-6">
+                    <h4 class="card-title mb-2"><i class="ti ti-file-upload me-1"></i> Input File Gambar QR Code</h4>
+                    <div class="mb-3">
+                      <label class="form-label required">Pilih File Gambar Tiket QR (.png, .jpg)</label>
+                      <input type="file" id="qr-file-input" class="form-control" accept="image/*">
+                    </div>
+                    <button class="btn btn-primary w-100" onclick="scanQrFromFile()">
+                      <i class="ti ti-scan me-1"></i> Baca QR Code dari File
+                    </button>
+                    <div id="scan-result" class="mt-3 alert alert-info d-none">
+                      <strong>Hasil Pembacaan Kode:</strong> <span id="scan-result-text">-</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB EMERGENCY & DYNAMIC QR GENERATOR -->
+          <div id="tab-master-qr" class="d-none">
+            <h2 class="page-title fs-2 mb-1">Generator QR Code Unit &amp; Log Pemindaian</h2>
+            <div class="text-muted mb-4">Buat QR Code Reguler/Darurat Kustom Berdasarkan Data Unit Riil &amp; Nama Perusahaan</div>
+
+            <!-- Form Generator QR Dinamis -->
+            <div class="card shadow-sm border-primary mb-4">
+              <div class="card-header bg-primary-lt">
+                <h3 class="card-title text-primary"><i class="ti ti-qrcode me-2"></i> Form Pembuatan QR Code Kustom (White-Label)</h3>
+              </div>
+              <div class="card-body">
+                <form id="form-qr-generator" class="row g-3">
+                  <div class="col-md-3">
+                    <label class="form-label required">Nama Perusahaan / Guest House</label>
+                    <input type="text" id="gen-company" class="form-control" value="Kedung Rejeki" required>
+                  </div>
+                  <div class="col-md-3">
+                    <label class="form-label required">Pilih Unit / Kamar / Armada</label>
+                    <select id="gen-unit-select" class="form-select" required>
+                      <option value="">Pilih Unit...</option>
+                      <!-- Diisi otomatis dari tabel units via JS -->
+                    </select>
+                  </div>
+                  <div class="col-md-3">
+                    <label class="form-label required">Jenis QR Code</label>
+                    <select id="gen-type" class="form-select" required>
+                      <option value="REGULER">Reguler (Checkout Tamu)</option>
+                      <option value="DARURAT">Darurat (Force Checkout / Kunci Hilang)</option>
+                    </select>
+                  </div>
+                  <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                      <i class="ti ti-device-floppy me-1"></i> Generate QR Code
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+            <!-- Preview Hasil QR Code yang Digenerate -->
+            <div id="qr-preview-card" class="card shadow-sm mb-4 d-none">
+              <div class="card-body text-center">
+                <h3 class="fw-bold mb-1" id="preview-title">-</h3>
+                <span class="badge bg-blue-lt mb-3" id="preview-badge">-</span>
+                <div class="d-flex justify-content-center mb-3">
+                  <div id="qrcode-render-box"></div>
+                </div>
+                <code class="mb-3 p-2 bg-light border rounded d-inline-block" id="preview-code-string">-</code>
+                <div>
+                  <button class="btn btn-outline-primary btn-sm" onclick="printGeneratedQr()">
+                    <i class="ti ti-printer me-1"></i> Cetak Label QR Ini
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tabel Riwayat Log Pemindaian QR (Reguler vs Darurat) -->
+            <div class="row">
+              <div class="col-md-6">
+                <div class="card shadow-sm mb-4">
+                  <div class="card-header bg-success-lt"><h3 class="card-title text-success"><i class="ti ti-scan me-2"></i> Log Scan QR Reguler</h3></div>
+                  <div class="table-responsive">
+                    <table class="table table-vcenter card-table table-sm">
+                      <thead>
+                        <tr><th>Waktu</th><th>Unit</th><th>Perusahaan</th><th>Status Perubahan</th></tr>
+                      </thead>
+                      <tbody id="log-reguler-tbody">
+                        <tr><td colspan="4" class="text-center text-muted py-3">Belum ada scan reguler.</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+             <div class="col-md-6">
+                <div class="card shadow-sm mb-4">
+                  <div class="card-header bg-danger-lt"><h3 class="card-title text-danger"><i class="ti ti-alert-triangle me-2"></i> Log Scan QR Darurat</h3></div>
+                  <div class="table-responsive">
+                    <table class="table table-vcenter card-table table-sm">
+                      <thead>
+                        <tr><th>Waktu</th><th>Unit</th><th>Perusahaan</th><th>Aksi Force Checkout</th></tr>
+                      </thead>
+                      <tbody id="log-darurat-tbody">
+                        <tr><td colspan="4" class="text-center text-muted py-3">Belum ada scan darurat.</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div> <!-- Penutup row log -->
+
+            <!-- Bagian Database Master QR Code yang tadinya berantakan dirapikan dalam satu container tab yang bersih -->
+            <div class="card shadow-sm p-4 mt-4">
+              <h2 class="page-title fs-2 mb-1">Database Master QR Code &amp; Cetak Label</h2>
+              <div class="text-muted mb-4">Generator QR Code Siap Cetak untuk Gantungan Kunci &amp; Armada</div>
+              <div class="row" id="master-qr-container">
+                <!-- Konten akan di-generate otomatis oleh script JS -->
+              </div>
+            </div>
+
+          </div> <!-- Penutup utama id="tab-master-qr" -->
+
+          <!-- TAB RINCIAN TRANSAKSI -->
+
+         
+          <div id="tab-transactions" class="d-none">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h2 class="page-title fs-2">Rincian Transaksi & Sumber Rekening</h2>
+    <div class="text-muted">Perekaman Rekening Pembayar Terkunci & Gateway</div>
+  </div>
+  <div>
+    <button class="btn btn-outline-primary btn-sm me-2" onclick="printTransactionsPdf()">
+      <i class="ti ti-printer me-1"></i> Cetak PDF
+    </button>
+    <span class="badge bg-blue-lt fs-3" id="count-transactions">0 Transaksi</span>
+  </div>
+</div>
+
+            <div class="card shadow-sm">
+              <div class="card-body border-bottom py-3">
+                <div class="input-icon">
+                  <span class="input-icon-addon"><i class="ti ti-search"></i></span>
+                  <input type="text" id="search-payment" class="form-control" placeholder="Cari ID Invoice / Rekening..." onkeyup="filterPayments()">
+                </div>
+              </div>
+              <div class="table-responsive">
+                <table class="table table-vcenter card-table table-striped">
+                  <thead>
+                    <tr>
+                      <th>ID Pembayaran</th>
+                      <th>Gateway</th>
+                      <th>Rekening Sumber Pembayar</th>
+                      <th>Jumlah Masuk</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="payment-table-body">
+                    <tr><td colspan="5" class="text-center text-muted py-4">Memuat data transaksi...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+         <!-- TAB NOTIFIKASI ADMIN -->
+          <div id="tab-wa-admin" class="d-none">
+            <h2 class="page-title fs-2 mb-1">Nomor Ponsel &amp; Pengaturan Notifikasi Admin</h2>
+            <div class="text-muted mb-4">Kelola Daftar Admin, Hak Akses Penerima Notifikasi Pesanan, &amp; Alert Satpam</div>
+
+            <div class="card shadow-sm border-info mb-4">
+              <div class="card-header bg-info-lt">
+                <h3 class="card-title text-info mb-0"><i class="ti ti-user-plus me-2"></i> Tambah / Daftarkan Admin &amp; Preferensi Notifikasi</h3>
+              </div>
+              <div class="card-body">
+                <form id="form-whatsapp-admin" class="row g-3">
+                  <div class="col-md-4">
+                    <label class="form-label required">Nama Pengelola / Jabatan</label>
+                    <input type="text" id="wa-admin-name" class="form-control" placeholder="Contoh: Manager / Satpam" required="">
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label required">Nomor WhatsApp Aktif</label>
+                    <input type="text" id="wa-admin-phone" class="form-control" placeholder="Contoh: 081234567890" required="">
+                  </div>
+                  <div class="col-md-4 d-flex align-items-center pt-4">
+                    <div class="form-check form-switch me-3">
+                      <input class="form-check-input" type="checkbox" id="wa-admin-order" checked="">
+                      <label class="form-check-label small" for="wa-admin-order">Notif Pesanan Masuk</label>
+                    </div>
+                    <div class="form-check form-switch">
+                      <input class="form-check-input" type="checkbox" id="wa-admin-alert">
+                      <label class="form-check-label small" for="wa-admin-alert">Alert Late Checkout</label>
+                    </div>
+                  </div>
+                  <div class="col-12">
+                    <button type="submit" class="btn btn-info" id="btn-save-wa-admin">
+                      <i class="ti ti-device-floppy me-1"></i> Simpan Data &amp; Preferensi Admin
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+            <!-- CONTAINER LIST ADMIN DI BAWAH -->
+            <div class="card shadow-sm">
+              <div class="card-header bg-white"><h3 class="card-title"><i class="ti ti-users me-2"></i> Daftar Admin Terdaftar &amp; Hak Akses Notifikasi</h3></div>
+              <div class="card-body">
+                <div id="wa-admin-list" class="row g-3">
+                  <span class="text-muted small">Memuat data admin...</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB API KEYS -->
+          <div id="tab-api-keys" class="d-none">
+            <h2 class="page-title fs-2 mb-1">Pengaturan Key API Gateway</h2>
+            <div class="text-muted mb-4">Integrasi WhatsApp &amp; Xendit Payment Gateway</div>
+
+            <div class="card shadow-sm border-primary">
+              <div class="card-header bg-primary-lt"><h3 class="card-title text-primary mb-0"><i class="ti ti-key me-2"></i> Token &amp; API Keys</h3></div>
+              <div class="card-body">
+                <form id="form-api-settings">
+                  <div class="mb-3">
+                    <label class="form-label">Xendit Secret API Key</label>
+                    <input type="password" id="api-xendit-secret" class="form-control" placeholder="xnd_development_...">
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Fonnte Token (WhatsApp API)</label>
+                    <input type="password" id="api-fonnte-token" class="form-control" placeholder="Token API Fonnte...">
+                  </div>
+                  <button type="submit" class="btn btn-primary" id="btn-save-api">
+                    <i class="ti ti-device-floppy me-1"></i> Simpan Konfigurasi API
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="footer footer-transparent bg-white border-top py-3 mt-auto">
+      <div class="container-fluid text-center text-muted">
+        <small>© 2026 Kedung Rejeki Guest House &amp; Travel - Enterprise Admin Control Panel</small>
+      </div>
+    </footer>
+  </div>
+
+  <!-- JavaScript Tabler -->
+  <script src="./assets/js/tabler.min.js"></script>
+  <script type="module" src="./assets/js/tabler-theme.esm.min.js"></script>
+
+  <!-- SCRIPT UTAMA -->
+  
+
+<script src="assets/js/admin.js"></script>
+<script src="assets/js/debug.js"></script></body></html>

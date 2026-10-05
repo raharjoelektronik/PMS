@@ -1,0 +1,105 @@
+/* --- Style Blok 1 (Updated for Responsive & Mobile Toggle) --- */
+body { 
+  background-color: #f4f6fa !important; 
+}
+
+.d-none { 
+  display: none !important; 
+}
+
+.nav-link.active {
+  background-color: rgba(32, 107, 196, 0.1);
+  color: #206bc4 !important;
+  font-weight: 600;
+  border-radius: 6px;
+}
+
+/* SIDEBAR HOVER EXCLUSIVE: Melayang (Floating) ala Gemini + Support Mobile Toggle */
+#sidebar-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 70px;
+  min-width: 70px;
+  overflow-x: hidden;
+  transition: width 0.25s ease-in-out, box-shadow 0.25s ease-in-out, transform 0.25s ease-in-out;
+  white-space: nowrap;
+  background-color: #ffffff;
+  height: 100vh;
+  z-index: 1050;
+  box-shadow: 2px 0 5px rgba(0,0,0,0.02);
+}
+
+#sidebar-container:hover,
+#sidebar-container.sidebar-mobile-open {
+  width: 260px;
+  box-shadow: 4px 0 15px rgba(0,0,0,0.1);
+}
+
+#sidebar-container .nav-link span.menu-text {
+  display: none;
+  opacity: 0;
+  transition: opacity 0.15s ease-in-out;
+}
+
+#sidebar-container:hover .nav-link span.menu-text,
+#sidebar-container.sidebar-mobile-open .nav-link span.menu-text {
+  display: inline;
+  opacity: 1;
+}
+
+#sidebar-container .nav-link i {
+  font-size: 1.25rem;
+  min-width: 35px;
+  text-align: center;
+}
+
+#sidebar-container .sidebar-title-text {
+  display: none;
+}
+
+#sidebar-container:hover .sidebar-title-text,
+#sidebar-container.sidebar-mobile-open .sidebar-title-text {
+  display: inline;
+}
+
+#main-content-area {
+  margin-left: 70px;
+  transition: margin-left 0.25s ease-in-out;
+}
+
+/* Penyesuaian Pairing Code Box dan Tombol/Form untuk Mobile */
+.pairing-code-box {
+  font-size: 2.2rem;
+  letter-spacing: 6px;
+  font-weight: 800;
+  color: #0d6efd;
+  background: #eef5ff;
+  border: 2px dashed #0d6efd;
+  border-radius: 10px;
+  padding: 12px 24px;
+  display: inline-block;
+  max-width: 100%;
+  word-break: break-all;
+}
+
+/* Responsivitas khusus untuk perangkat Mobile / Layar Kecil */
+@media (max-width: 768px) {
+  #main-content-area {
+    margin-left: 70px !important;
+    padding: 15px;
+  }
+  
+  .pairing-code-box {
+    font-size: 1.5rem;
+    letter-spacing: 3px;
+    padding: 8px 12px;
+  }
+  
+  /* Pastikan form dan tombol menyesuaikan lebar layar */
+  .container-fluid, .card {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+}
+```[cite: 1]

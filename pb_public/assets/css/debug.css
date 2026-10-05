@@ -1,0 +1,55 @@
+/* --- Style Blok 1 (Updated for Responsive Terminal) --- */
+body {
+  background-color: #f4f6fa !important;
+}
+
+.dev-header {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  border-bottom: 3px solid #dc2626;
+  color: #ffffff;
+}
+
+.terminal-box {
+  background-color: #1e293b;
+  color: #38bdf8;
+  font-family: monospace;
+  font-size: 0.85rem;
+  height: 280px;
+  max-height: 50vh;
+  overflow-y: auto;
+  padding: 12px;
+  border-radius: 6px;
+  border: 1px solid #334155;
+  text-align: left;
+  word-break: break-all;
+}
+
+.log-info { 
+  color: #38bdf8; 
+}
+
+.log-success { 
+  color: #4ade80; 
+}
+
+.log-warning { 
+  color: #facc15; 
+}
+
+.log-error { 
+  color: #f87171; 
+}
+
+.d-none { 
+  display: none !important; 
+}
+
+/* Responsivitas khusus untuk perangkat Mobile / Layar Kecil */
+@media (max-width: 576px) {
+  .terminal-box {
+    font-size: 0.75rem;
+    height: 220px;
+    padding: 8px;
+  }
+}
+```[cite: 2]

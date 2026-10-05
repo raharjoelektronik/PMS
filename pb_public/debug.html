@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="id"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dev Diagnostic &amp; Debug Panel - Kedung Rejeki</title>
+  
+  <!-- Tabler CSS & Tabler Icons CDN -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@latest/dist/css/tabler.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  
+  <!-- PocketBase SDK -->
+  <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+
+  <link rel="stylesheet" href="assets/css/debug.css">
+  <style>
+    /* Styling tambahan untuk tabel gulung & fleksibilitas live diagnostic */
+    .scrollable-monitoring-container {
+      max-height: 320px;
+      overflow-y: auto;
+    }
+    .terminal-box {
+      font-family: monospace;
+      font-size: 0.85rem;
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 10px;
+      border-radius: 4px;
+      max-height: 250px;
+      overflow-y: auto;
+      resize: vertical; /* Bisa dilebarkan/diubah ukurannya secara vertikal */
+    }
+  </style>
+</head>
+<body>
+
+  <!-- SECTION 1: FORM LOGIN / AUTENTIKASI DEV (Tampil Default) -->
+  <div id="section-dev-login" class="page page-center min-vh-100 py-4">
+    <div class="container container-tight">
+      <div class="text-center mb-4">
+        <span class="badge bg-danger text-white px-3 py-2 fw-bold fs-5 shadow-sm">
+          <i class="ti ti-code-circle me-1"></i> DEV MODE SECURED
+        </span>
+      </div>
+      <div class="card card-md shadow-sm border-0">
+        <div class="card-body">
+          <h2 class="h2 text-center mb-3">Autentikasi Superuser</h2>
+          <div class="alert alert-warning small mb-4">
+            Akses ke Dev Diagnostic &amp; Debug Panel dibatasi hanya untuk akun Superuser PocketBase (<code>_superusers</code>).
+          </div>
+          <form id="superuser-login-form" onsubmit="handleSuperuserLogin(event)" autocomplete="off">
+            <div class="mb-3">
+              <label class="form-label required fw-bold">Email Superuser</label>
+              <input type="email" class="form-control" id="su-email" placeholder="admin@example.com" required="">
+            </div>
+            <div class="mb-3">
+              <label class="form-label required fw-bold">Password Superuser</label>
+              <input type="password" class="form-control" id="su-password" placeholder="********" required="">
+            </div>
+            <div id="login-error-alert" class="alert alert-danger d-none py-2 mb-3 small"></div>
+            <div class="form-footer">
+              <button type="submit" class="btn btn-danger w-100" id="btn-su-login">
+                <i class="ti ti-login me-1"></i> Autentikasi &amp; Masuk Sesi Dev
+              </button>
+            </div>
+          </form>
+          <div class="text-center mt-3">
+            <a href="./index.html" class="text-muted small text-decoration-underline">
+              <i class="ti ti-arrow-left me-1"></i> Kembali ke Beranda Web
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 2: DASHBOARD UTAMA DEBUG (Disembunyikan Default / d-none) -->
+  <div id="section-dev-dashboard" class="page d-none">
+    
+    <!-- HEADER DEV MODE -->
+    <header class="navbar navbar-expand-md dev-header py-3">
+      <div class="container-xl d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-3">
+          <span class="badge bg-danger text-white px-3 py-2 fw-bold fs-5 shadow-sm">
+            <i class="ti ti-code-circle me-1"></i> DEV MODE
+          </span>
+          <div>
+            <h1 class="navbar-brand m-0 fw-bold text-white fs-2">Dev Diagnostic &amp; Debug Panel</h1>
+            <div class="text-white-50 small">Sistem Pemantauan Backend Node.js &amp; PocketBase Database</div>
+          </div>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <a href="./index.html" class="btn btn-outline-light btn-sm">
+            <i class="ti ti-home me-1"></i> Ke Beranda Web
+          </a>
+          <button onclick="logoutDev()" class="btn btn-danger btn-sm">
+            <i class="ti ti-logout me-1"></i> Keluar
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <div class="page-wrapper">
+      <div class="container-xl py-4">
+        
+        <!-- BARIS 1: PEMERIKSAAN & DIAGNOSTIK (Diperkecil) & KONFIGURASI URL -->
+        <div class="row row-cards mb-4">
+          <div class="col-lg-4">
+            <div class="card shadow-sm h-100">
+              <div class="card-header bg-light d-flex justify-content-between align-items-center py-2">
+                <h3 class="card-title text-dark fs-5 mb-0"><i class="ti ti-stethoscope me-1 text-primary"></i> Pemeriksaan &amp; Diagnostik</h3>
+                <button onclick="runTotalDiagnostics()" class="btn btn-success btn-sm px-2 py-1" id="btn-run-diag" style="font-size: 0.75rem;">
+                  <i class="ti ti-player-play"></i> Cek
+                </button>
+              </div>
+              <div class="card-body py-2">
+                <div class="row text-center">
+                  <div class="col-4 border-end py-1">
+                    <div class="text-muted" style="font-size: 0.7rem;">Database</div>
+                    <div id="diag-db-status" class="fw-bold text-secondary" style="font-size: 0.85rem;">-</div>
+                  </div>
+                  <div class="col-4 border-end py-1">
+                    <div class="text-muted" style="font-size: 0.7rem;">Latensi</div>
+                    <div id="diag-latency" class="fw-bold text-secondary" style="font-size: 0.85rem;">- ms</div>
+                  </div>
+                  <div class="col-4 py-1">
+                    <div class="text-muted" style="font-size: 0.7rem;">Sesi</div>
+                    <div id="diag-session-status" class="fw-bold text-secondary" style="font-size: 0.85rem;">-</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-8">
+            <div class="card shadow-sm h-100">
+              <div class="card-header bg-light py-2">
+                <h3 class="card-title text-dark fs-5 mb-0"><i class="ti ti-settings me-1 text-primary"></i> Konfigurasi Runtime URL</h3>
+              </div>
+              <div class="card-body py-2">
+                <form id="config-form" onsubmit="saveRuntimeConfig(event)" class="row g-2 align-items-center">
+                  <div class="col-md-5">
+                    <input type="text" class="form-control form-control-sm" id="input-node-url" placeholder="URL Node.js" required="">
+                  </div>
+                  <div class="col-md-5">
+                    <input type="text" class="form-control form-control-sm" id="input-pb-url" placeholder="URL PocketBase" required="">
+                  </div>
+                  <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary btn-sm w-100" id="btn-save-config">
+                      <i class="ti ti-device-floppy"></i> Simpan
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- BARIS 2: TABEL PEMANTAUAN FUNGSI SISTEM (STATUS CEPAT DIGABUNG DI SINI) -->
+        <div class="row row-cards mb-4">
+          <div class="col-12">
+            <div class="card shadow-sm">
+              <div class="card-header bg-light d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <h3 class="card-title text-dark mb-0">
+                  <i class="ti ti-table me-2 text-primary"></i> Pemantauan Fungsi Sistem &amp; Status Cepat Layanan
+                </h3>
+                <div class="d-flex align-items-center gap-3">
+                  <!-- Status Cepat Layanan yang digabung sebaris -->
+                  <div class="d-flex align-items-center gap-2 small">
+                    <span class="text-muted">PB:</span> <span id="badge-pb-health" class="badge bg-secondary text-white">Menunggu</span>
+                    <span class="text-muted ms-1">Node:</span> <span id="badge-node-health" class="badge bg-secondary text-white">Menunggu</span>
+                    <span class="text-muted ms-1">Runtime:</span> <span id="badge-runtime-mode" class="badge bg-info text-white">Mendeteksi</span>
+                  </div>
+                  <!-- Tombol Expand untuk melihat semua fungsi -->
+                  <button id="btn-toggle-expand" onclick="toggleMonitoringExpand()" class="btn btn-outline-primary btn-sm">
+                    <i class="ti ti-maximize me-1"></i> Expand (Tampilkan Semua)
+                  </button>
+                </div>
+              </div>
+              <div class="card-body p-0">
+                <div class="table-responsive scrollable-monitoring-container">
+                  <table class="table table-vcenter table-striped card-table mb-0">
+                    <thead>
+                      <tr>
+                        <th>Halaman</th>
+                        <th>Fitur / Fungsi Utama</th>
+                        <th class="text-center">Status</th>
+                        <th>Log Error</th>
+                        <th>Solusi Perbaikan</th>
+                      </tr>
+                    </thead>
+                    <tbody id="monitoring-table-body">
+                      <tr>
+                        <td colspan="5" class="text-center text-muted py-3">Klik tombol "Cek" atau Jalankan Diagnostik untuk memuat status pemantauan fungsi.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- BARIS 3: LIVE DIAGNOSTIC TERMINAL / LOG MONITOR (Se baris / fleksibel) -->
+        <div class="row row-cards">
+          <div class="col-12">
+            <div class="card shadow-sm">
+              <div class="card-header bg-light d-flex justify-content-between align-items-center py-2">
+                <h3 class="card-title text-dark fs-5 mb-0"><i class="ti ti-terminal me-1 text-primary"></i> Live Diagnostic Terminal / Log Monitor</h3>
+                <button onclick="clearTerminalLogs()" class="btn btn-outline-secondary btn-sm py-1" style="font-size: 0.75rem;">
+                  <i class="ti ti-eraser me-1"></i> Bersihkan Log
+                </button>
+              </div>
+              <div class="card-body p-2">
+                <div id="terminal-console" class="terminal-box">
+                  [SYSTEM INITIALIZED] Memuat panel debug untuk pengembang...<br>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Tabler Core JS -->
+  <script src="https://cdn.jsdelivr.net/npm/@tabler/core@latest/dist/js/tabler.min.js"></script>
+  <script src="assets/js/debug.js"></script>
+</body>
+</html>
